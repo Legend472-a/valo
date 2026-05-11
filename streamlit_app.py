@@ -1,11 +1,12 @@
 import os
-import torch
-torch.classes.__path__ = []  # Fix for Streamlit + Torch
 
 import streamlit as st
 from torchvision import transforms, models
 from PIL import Image
 import torch.nn as nn
+
+import torch
+torch.classes.__path__ = [] 
 
 # --------------------- Config ---------------------
 st.set_page_config(
@@ -39,12 +40,18 @@ def load_model():
     model_path = "resnet_model.pth"
     
     if not os.path.exists(model_path):
-        st.error("❌ resnet_model.pth not found! Please place it in the same folder.")
+        st.error("❌ Model file `resnet_model.pth` not found!")
         st.stop()
     
-    model.load_state_dict(torch.load(model_path, map_location=device))
-    model.eval()
-    return model
+    try:
+        state_dict = torch.load(model_path, map_location=device, weights_only=True)
+        model.load_state_dict(state_dict)
+        model.eval()
+        #st.success("✅ Model loaded successfully", icon="🟢")
+        return model
+    except Exception as e:
+        st.error(f"❌ Error loading model: {str(e)}")
+        st.stop()
 
 model = load_model()
 
